@@ -9,6 +9,7 @@
     "dev": "bun run scripts/build.ts --watch",
     "typecheck": "bun node_modules/typescript/bin/tsc --noEmit",
     "test": "bun test",
+    "package": "bun run scripts/build.ts && bun run scripts/package.ts",
     "screenshots": "bun run scripts/screenshot.ts"
   },
   "dependencies": {
