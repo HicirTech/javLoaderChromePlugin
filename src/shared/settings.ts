@@ -1,13 +1,16 @@
 /** aria2 connection details. Stored local, not sync: a LAN credential must not leave the machine. */
 
+
 import type { Aria2Settings } from "./types";
 
 const STORAGE_KEY = "aria2Settings";
 
-/** Shipped default, and the one origin granted statically in the manifest. */
-export const DEFAULT_ENDPOINT = "http://192.168.10.102:6800/jsonrpc";
-
-export const DEFAULT_SETTINGS: Aria2Settings = { endpoint: DEFAULT_ENDPOINT, secret: "" };
+/**
+ * Empty until configured. The extension ships no endpoint, so no address of the
+ * author's is baked into the package and the manifest grants no host outright --
+ * whatever the user enters is requested from optional_host_permissions on save.
+ */
+export const DEFAULT_SETTINGS: Aria2Settings = { endpoint: "", secret: "" };
 
 export const loadSettings = async (): Promise<Aria2Settings> => {
   const stored = await chrome.storage.local.get(STORAGE_KEY);
@@ -16,10 +19,7 @@ export const loadSettings = async (): Promise<Aria2Settings> => {
 
   const candidate = value as Partial<Aria2Settings>;
   return {
-    endpoint:
-      typeof candidate.endpoint === "string" && candidate.endpoint.trim()
-        ? candidate.endpoint.trim()
-        : DEFAULT_ENDPOINT,
+    endpoint: typeof candidate.endpoint === "string" ? candidate.endpoint.trim() : "",
     secret: typeof candidate.secret === "string" ? candidate.secret : "",
   };
 };

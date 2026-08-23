@@ -4,9 +4,16 @@
   "version": "2.0.0",
   "description": "Collects magnet links from javdb video pages and submits them to an aria2 daemon.",
   "minimum_chrome_version": "116",
-  "permissions": ["storage"],
-  "host_permissions": ["https://javdb.com/v/*", "http://192.168.10.102:6800/*"],
-  "optional_host_permissions": ["http://*/*", "https://*/*"],
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://javdb.com/v/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_title": "Jav Links Collector",
@@ -26,8 +33,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://javdb.com/v/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://javdb.com/v/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ]

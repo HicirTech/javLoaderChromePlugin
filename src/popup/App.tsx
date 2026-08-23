@@ -26,7 +26,7 @@ type View = "list" | "settings";
 type Selection = Readonly<Record<number, string>>;
 
 const NO_PERMISSION =
-  "The extension has no permission to reach that endpoint. Open settings and save it to grant access.";
+  "The extension has no permission to reach that endpoint. Open settings and save it again to grant access.";
 
 const count = (value: number, noun: string): string =>
   value === 1 ? `1 ${noun}` : `${value} ${noun}s`;
@@ -69,6 +69,9 @@ export const App = (): React.ReactElement => {
     });
   }, [sources]);
 
+  // Nothing ships configured, so this is false until the user fills settings in.
+  const configured = settings.endpoint.trim().length > 0;
+
   const handleSelect = useCallback((tabId: number, magnetId: string) => {
     setSelection((previous) => ({ ...previous, [tabId]: magnetId }));
   }, []);
@@ -100,6 +103,12 @@ export const App = (): React.ReactElement => {
     setSubmitting(true);
     setProblem(null);
     setOutcomes([]);
+
+    if (!configured) {
+      setProblem("Set the aria2 JSON-RPC URL in settings first.");
+      setSubmitting(false);
+      return;
+    }
 
     if (!(await hasEndpointPermission(settings.endpoint))) {
       setProblem(NO_PERMISSION);
@@ -161,6 +170,20 @@ export const App = (): React.ReactElement => {
               </Stack>
             ) : null}
 
+            {!loading && !configured ? (
+              <Alert
+                severity="info"
+                variant="outlined"
+                action={
+                  <Button size="small" color="inherit" onClick={() => setView("settings")}>
+                    Settings
+                  </Button>
+                }
+              >
+                No aria2 endpoint configured. Copy works without one.
+              </Alert>
+            ) : null}
+
             {sources.map((source) => (
               <MovieCard
                 key={source.tabId}
@@ -214,7 +237,7 @@ export const App = (): React.ReactElement => {
             <Button
               variant="contained"
               onClick={() => void handleSubmit()}
-              disabled={submitting || chosen.length === 0}
+              disabled={submitting || chosen.length === 0 || !configured}
             >
               {submitting ? "Sending" : "Send to aria2"}
             </Button>

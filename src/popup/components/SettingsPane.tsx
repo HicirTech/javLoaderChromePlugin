@@ -31,8 +31,11 @@ export const SettingsPane = ({ settings, onSaved }: SettingsPaneProps): React.Re
   const [endpoint, setEndpoint] = useState(settings.endpoint);
   const [secret, setSecret] = useState(settings.secret);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [touched, setTouched] = useState(false);
 
-  const endpointError = status.kind === "error" ? null : validateEndpoint(endpoint);
+  // The field starts empty because nothing ships configured; complaining about
+  // that before the user has typed anything would be noise.
+  const endpointError = touched && status.kind !== "error" ? validateEndpoint(endpoint) : null;
 
   const ensureReachable = async (): Promise<Aria2Settings | null> => {
     const invalid = validateEndpoint(endpoint);
@@ -91,7 +94,8 @@ export const SettingsPane = ({ settings, onSaved }: SettingsPaneProps): React.Re
   return (
     <Stack spacing={1.5}>
       <Typography variant="body2" color="text.secondary">
-        Magnets are submitted to this aria2 daemon over JSON-RPC.
+        Magnets are submitted to this aria2 daemon over JSON-RPC. Nothing is configured until you
+        enter it here.
       </Typography>
 
       <TextField
@@ -99,10 +103,11 @@ export const SettingsPane = ({ settings, onSaved }: SettingsPaneProps): React.Re
         value={endpoint}
         onChange={(event) => {
           setEndpoint(event.target.value);
+          setTouched(true);
           setStatus({ kind: "idle" });
         }}
         error={endpointError !== null}
-        helperText={endpointError ?? "For example http://192.168.10.102:6800/jsonrpc"}
+        helperText={endpointError ?? "For example http://localhost:6800/jsonrpc"}
       />
 
       <TextField
