@@ -18,7 +18,7 @@ const tabs = FIXTURE_SOURCES.map((source) => ({
 }));
 
 const store: Record<string, unknown> = {
-  aria2Settings: { endpoint: "http://192.168.10.102:6800/jsonrpc", secret: "shown-as-dots" },
+  aria2Settings: { endpoint: "http://192.168.1.10:6800/jsonrpc", secret: "shown-as-dots" },
 };
 
 (globalThis as unknown as { chrome: unknown }).chrome = {

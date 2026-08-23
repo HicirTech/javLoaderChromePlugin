@@ -47,8 +47,8 @@ popup opens, so closing a tab removes it, and a page whose contents changed repo
   configuration.
 - It does not keep a history, a queue, or a list of what you sent. Nothing survives closing the
   popup except the aria2 connection settings.
-- It sends nothing anywhere except the aria2 endpoint you configure. There is no analytics, no
-  telemetry, and no third-party request of any kind.
+- It sends nothing anywhere except the aria2 endpoint you configure, and it ships with none
+  configured. There is no analytics, no telemetry, and no third-party request of any kind.
 
 ## Requirements
 
@@ -74,23 +74,24 @@ rebuilds on save, but Chrome still needs the reload click.
 
 ## Connecting to aria2
 
-Open the popup and click the settings icon.
+The extension ships with no endpoint configured. Until you enter one, **Send to aria2** stays
+disabled and the popup says so; **Copy** works regardless. Open the popup and click the settings
+icon.
 
 <img src="docs/popup-settings.png" width="520" alt="The settings pane, with the JSON-RPC URL and RPC secret fields" />
 
-- **JSON-RPC URL** — the full path, for example `http://192.168.10.102:6800/jsonrpc`. That
-  address is the shipped default and is the one origin the manifest grants outright, so it works
-  with no permission prompt.
+- **JSON-RPC URL** — the full path, for example `http://localhost:6800/jsonrpc` or
+  `http://192.168.1.10:6800/jsonrpc` for a daemon on another machine.
 - **RPC secret** — the value passed to aria2's `--rpc-secret`, without any prefix. Leave it empty
   if the daemon runs without one.
 
 **Test connection** calls `aria2.getVersion` and shows the version the daemon reports, which
 confirms the URL, the secret, and the network path in one step. **Save** stores both values.
 
-Testing or saving an endpoint other than the default asks Chrome for permission to reach that
-host, and Chrome sometimes closes the popup to show that prompt. **Save** writes what you typed
-before the prompt appears, so reopening the popup shows your values again. If you granted the
-permission, you are done; if the popup closed before you could, press Save once more.
+Testing or saving asks Chrome for permission to reach that host, since the manifest grants no
+aria2 origin in advance. Chrome sometimes closes the popup to show that prompt. **Save** writes
+what you typed before the prompt appears, so reopening the popup shows your values again. If you
+granted the permission, you are done; if the popup closed before you could, press Save once more.
 
 ### About the secret
 
@@ -134,8 +135,7 @@ The text is the fallback.
 |---|---|
 | `storage` | Holds the aria2 URL and secret. Nothing else is stored. |
 | `https://javdb.com/v/*` | Injects the content script, and lets the popup see the title and URL of javdb video tabs. This is narrower than the `tabs` permission, which would expose every tab. |
-| `http://192.168.10.102:6800/*` | The default aria2 endpoint, granted so the common case needs no prompt. |
-| `optional_host_permissions` (`http://*/*`, `https://*/*`) | Lets the extension ask for one origin at a time. Both **Test connection** and **Save** request permission for whatever endpoint is in the field, and only for that host. |
+| `optional_host_permissions` (`http://*/*`, `https://*/*`) | The only way the extension reaches aria2. It asks for one origin at a time: **Test connection** and **Save** request permission for whatever endpoint is in the field, and for nothing else. No aria2 host is granted in the manifest, so the package carries no address of anyone's. |
 
 ## Development
 
