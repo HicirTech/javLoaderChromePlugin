@@ -1,4 +1,6 @@
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import SettingsIcon from "@mui/icons-material/Settings";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -14,8 +16,11 @@ import { submitMagnets } from "../shared/aria2";
 import { DEFAULT_SETTINGS, hasEndpointPermission, loadSettings } from "../shared/settings";
 import type { Aria2Settings, Magnet, SubmitOutcome } from "../shared/types";
 import { MovieCard } from "./components/MovieCard";
+import { SettingsPane } from "./components/SettingsPane";
 import { SubmitReport } from "./components/SubmitReport";
 import { useJavdbTabs } from "./useJavdbTabs";
+
+type View = "list" | "settings";
 
 /** Chosen magnet per tab. */
 type Selection = Readonly<Record<number, string>>;
@@ -29,6 +34,7 @@ const count = (value: number, noun: string): string =>
 export const App = (): React.ReactElement => {
   const { sources, unreadable, loading, rescan } = useJavdbTabs();
   const [settings, setSettings] = useState<Aria2Settings>(DEFAULT_SETTINGS);
+  const [view, setView] = useState<View>("list");
   const [selection, setSelection] = useState<Selection>({});
   const [outcomes, setOutcomes] = useState<readonly SubmitOutcome[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -87,20 +93,37 @@ export const App = (): React.ReactElement => {
   return (
     <Box sx={{ width: 520, maxHeight: 600, display: "flex", flexDirection: "column" }}>
       <Stack direction="row" alignItems="center" spacing={1} sx={{ px: 1.5, py: 1, flexShrink: 0 }}>
+        {view === "settings" ? (
+          <IconButton size="small" onClick={() => setView("list")} aria-label="Back">
+            <ArrowBackIcon fontSize="small" />
+          </IconButton>
+        ) : null}
         <Typography variant="subtitle1" sx={{ flexGrow: 1, fontWeight: 600 }}>
-          Jav Links Collector
+          {view === "settings" ? "Settings" : "Jav Links Collector"}
         </Typography>
-        <Tooltip title="Rescan open tabs">
-          <span>
-            <IconButton size="small" onClick={rescan} disabled={loading} aria-label="Rescan">
-              <RefreshIcon fontSize="small" />
-            </IconButton>
-          </span>
-        </Tooltip>
+        {view === "list" ? (
+          <>
+            <Tooltip title="Rescan open tabs">
+              <span>
+                <IconButton size="small" onClick={rescan} disabled={loading} aria-label="Rescan">
+                  <RefreshIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Settings">
+              <IconButton size="small" onClick={() => setView("settings")} aria-label="Settings">
+                <SettingsIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </>
+        ) : null}
       </Stack>
       <Divider />
 
       <Box sx={{ flex: 1, overflowY: "auto", p: 1.5 }}>
+        {view === "settings" ? (
+          <SettingsPane settings={settings} onSaved={setSettings} />
+        ) : (
         <Stack spacing={1}>
           {loading ? (
             <Stack alignItems="center" sx={{ py: 4 }}>
@@ -145,21 +168,31 @@ export const App = (): React.ReactElement => {
 
           <SubmitReport outcomes={outcomes} />
         </Stack>
+        )}
       </Box>
 
-      <Divider />
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ px: 1.5, py: 1, flexShrink: 0 }}>
-        <Typography variant="caption" color="text.secondary" sx={{ flexGrow: 1 }}>
-          {`${count(chosen.length, "magnet")} selected`}
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={() => void handleSubmit()}
-          disabled={submitting || chosen.length === 0}
-        >
-          {submitting ? "Sending" : "Send to aria2"}
-        </Button>
-      </Stack>
+      {view === "list" ? (
+        <>
+          <Divider />
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            sx={{ px: 1.5, py: 1, flexShrink: 0 }}
+          >
+            <Typography variant="caption" color="text.secondary" sx={{ flexGrow: 1 }}>
+              {`${count(chosen.length, "magnet")} selected`}
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => void handleSubmit()}
+              disabled={submitting || chosen.length === 0}
+            >
+              {submitting ? "Sending" : "Send to aria2"}
+            </Button>
+          </Stack>
+        </>
+      ) : null}
     </Box>
   );
 };
