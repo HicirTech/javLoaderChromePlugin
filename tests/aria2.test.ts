@@ -36,7 +36,7 @@ const respondWith = (handler: (body: Capture["body"]) => unknown): void => {
 };
 
 const settings: Aria2Settings = {
-  endpoint: "http://192.168.10.102:6800/jsonrpc",
+  endpoint: "http://192.168.1.10:6800/jsonrpc",
   secret: "s3cret",
 };
 
