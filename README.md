@@ -173,21 +173,3 @@ tests/
   fixtures/              whole javdb pages saved from a browser
 docs/                    the screenshots in this README
 ```
-
-Two design decisions are worth knowing before changing anything.
-
-**Each magnet gets its own `aria2.addUri` call.** That method takes an array of URIs pointing at
-the *same* resource -- a mirror list, not a batch -- and for a magnet the array must hold exactly
-one element. Passing several unrelated magnets in one call registers the first and discards the
-rest without reporting an error.
-
-**The content script never pushes.** `chrome.runtime.sendMessage` broadcasts to every extension
-context at once, so a script that volunteers state is delivered to the service worker and the popup
-alike; forwarding it again from the worker produces a second copy whose sender has no tab. The
-popup pulls from each tab instead, with `chrome.tabs.sendMessage`, which is addressed to one
-recipient. There is no other message in the extension.
-
-There is also no timer anywhere. A Manifest V3 service worker is evicted after roughly thirty
-seconds of inactivity, and a pending timer neither keeps it alive nor survives termination, so
-`setInterval` housekeeping in a worker never runs. Nothing here outlives an open tab, so nothing
-needs cleaning up.
