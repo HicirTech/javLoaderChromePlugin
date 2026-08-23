@@ -39,10 +39,18 @@ export const App = (): React.ReactElement => {
   const [outcomes, setOutcomes] = useState<readonly SubmitOutcome[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     void loadSettings().then(setSettings);
   }, []);
+
+  // The footer says what just happened, then goes back to what is selected.
+  useEffect(() => {
+    if (notice === null) return;
+    const timer = setTimeout(() => setNotice(null), 2500);
+    return () => clearTimeout(timer);
+  }, [notice]);
 
   // Default to the first magnet, but never overwrite a choice already made.
   useEffect(() => {
@@ -74,6 +82,19 @@ export const App = (): React.ReactElement => {
     }
     return picked;
   }, [sources, selection]);
+
+  /** One URI per line: what an "add from clipboard" expects. */
+  const handleCopy = async (): Promise<void> => {
+    setProblem(null);
+    try {
+      await navigator.clipboard.writeText(chosen.map((magnet) => magnet.uri).join("\n"));
+      setNotice(`Copied ${count(chosen.length, "magnet")}`);
+    } catch (cause) {
+      setProblem(
+        `Could not write to the clipboard: ${cause instanceof Error ? cause.message : String(cause)}`,
+      );
+    }
+  };
 
   const handleSubmit = async (): Promise<void> => {
     setSubmitting(true);
@@ -124,50 +145,50 @@ export const App = (): React.ReactElement => {
         {view === "settings" ? (
           <SettingsPane settings={settings} onSaved={setSettings} />
         ) : (
-        <Stack spacing={1}>
-          {loading ? (
-            <Stack alignItems="center" sx={{ py: 4 }}>
-              <CircularProgress size={24} />
-            </Stack>
-          ) : null}
+          <Stack spacing={1}>
+            {loading ? (
+              <Stack alignItems="center" sx={{ py: 4 }}>
+                <CircularProgress size={24} />
+              </Stack>
+            ) : null}
 
-          {!loading && sources.length === 0 && unreadable.length === 0 ? (
-            <Stack alignItems="center" spacing={0.5} sx={{ py: 4, px: 2, textAlign: "center" }}>
-              <Typography variant="body2">No javdb video pages are open.</Typography>
-              <Typography variant="caption" color="text.secondary">
-                Open one or more javdb.com/v/ pages, then reopen this popup.
-              </Typography>
-            </Stack>
-          ) : null}
+            {!loading && sources.length === 0 && unreadable.length === 0 ? (
+              <Stack alignItems="center" spacing={0.5} sx={{ py: 4, px: 2, textAlign: "center" }}>
+                <Typography variant="body2">No javdb video pages are open.</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Open one or more javdb.com/v/ pages, then reopen this popup.
+                </Typography>
+              </Stack>
+            ) : null}
 
-          {sources.map((source) => (
-            <MovieCard
-              key={source.tabId}
-              source={source}
-              selectedId={selection[source.tabId]}
-              onSelect={handleSelect}
-            />
-          ))}
+            {sources.map((source) => (
+              <MovieCard
+                key={source.tabId}
+                source={source}
+                selectedId={selection[source.tabId]}
+                onSelect={handleSelect}
+              />
+            ))}
 
-          {unreadable.map((tab) => (
-            <Alert key={tab.tabId} severity="warning" variant="outlined">
-              <Typography variant="body2" noWrap title={tab.title}>
-                {tab.title || tab.url}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {tab.reason}
-              </Typography>
-            </Alert>
-          ))}
+            {unreadable.map((tab) => (
+              <Alert key={tab.tabId} severity="warning" variant="outlined">
+                <Typography variant="body2" noWrap title={tab.title}>
+                  {tab.title || tab.url}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {tab.reason}
+                </Typography>
+              </Alert>
+            ))}
 
-          {problem ? (
-            <Alert severity="error" variant="outlined">
-              {problem}
-            </Alert>
-          ) : null}
+            {problem ? (
+              <Alert severity="error" variant="outlined">
+                {problem}
+              </Alert>
+            ) : null}
 
-          <SubmitReport outcomes={outcomes} />
-        </Stack>
+            <SubmitReport outcomes={outcomes} />
+          </Stack>
         )}
       </Box>
 
@@ -181,8 +202,15 @@ export const App = (): React.ReactElement => {
             sx={{ px: 1.5, py: 1, flexShrink: 0 }}
           >
             <Typography variant="caption" color="text.secondary" sx={{ flexGrow: 1 }}>
-              {`${count(chosen.length, "magnet")} selected`}
+              {notice ?? `${count(chosen.length, "magnet")} selected`}
             </Typography>
+            <Button
+              variant="outlined"
+              onClick={() => void handleCopy()}
+              disabled={chosen.length === 0}
+            >
+              Copy
+            </Button>
             <Button
               variant="contained"
               onClick={() => void handleSubmit()}
