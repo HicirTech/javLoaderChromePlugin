@@ -8,7 +8,8 @@
     "build": "bun run scripts/build.ts",
     "dev": "bun run scripts/build.ts --watch",
     "typecheck": "bun node_modules/typescript/bin/tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "screenshots": "bun run scripts/screenshot.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
