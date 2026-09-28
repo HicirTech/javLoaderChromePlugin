@@ -1,5 +1,6 @@
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
@@ -8,6 +9,7 @@ import { useState } from "react";
 import { probeVersion } from "../../shared/aria2";
 import { requestEndpointPermission, saveSettings, validateEndpoint } from "../../shared/settings";
 import type { Aria2Settings } from "../../shared/types";
+import { CookieBinding } from "./CookieBinding";
 
 interface SettingsPaneProps {
   readonly settings: Aria2Settings;
@@ -149,6 +151,9 @@ export const SettingsPane = ({ settings, onSaved }: SettingsPaneProps): React.Re
           Save
         </Button>
       </Stack>
+
+      <Divider />
+      <CookieBinding allowPicker={false} />
     </Stack>
   );
 };
