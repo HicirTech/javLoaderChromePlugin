@@ -22,13 +22,6 @@ const store: Record<string, unknown> = {
 };
 
 (globalThis as unknown as { chrome: unknown }).chrome = {
-  tabs: {
-    query: async () => tabs,
-    sendMessage: async (tabId: number) => {
-      const source = FIXTURE_SOURCES.find((candidate) => candidate.tabId === tabId);
-      return source ? { ok: true, page: source } : { ok: false, error: "not found" };
-    },
-  },
   storage: {
     local: {
       get: async (key: string) => ({ [key]: store[key] }),
@@ -39,6 +32,21 @@ const store: Record<string, unknown> = {
     contains: async () => true,
     request: async () => true,
   },
+  cookies: {
+    getAll: async () => [
+      { name: "cf_clearance", value: "x", expirationDate: Date.now() / 1000 + 5400 },
+      { name: "over18", value: "1" },
+    ],
+  },
+  tabs: {
+    query: async () => tabs,
+    sendMessage: async (tabId: number) => {
+      const source = FIXTURE_SOURCES.find((candidate) => candidate.tabId === tabId);
+      return source ? { ok: true, page: source } : { ok: false, error: "not found" };
+    },
+    create: async () => ({}),
+  },
+  runtime: { getURL: (path: string) => path },
 };
 
 let gid = 0;
