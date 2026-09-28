@@ -11,6 +11,7 @@ const ENTRIES = [
   { entry: "src/background/index.ts", name: "background" },
   { entry: "src/content/index.ts", name: "content" },
   { entry: "src/popup/main.tsx", name: "popup" },
+  { entry: "src/options/main.tsx", name: "options" },
 ] as const;
 
 const development = process.argv.includes("--dev") || process.argv.includes("--watch");
@@ -52,6 +53,7 @@ const build = async (): Promise<boolean> => {
 
   await cp("src/manifest.json", `${OUT_DIR}/manifest.json`);
   await cp("src/popup/index.html", `${OUT_DIR}/popup.html`);
+  await cp("src/options/index.html", `${OUT_DIR}/options.html`);
   await generateIcons(`${OUT_DIR}/icons`);
   return true;
 };

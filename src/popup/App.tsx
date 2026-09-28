@@ -18,6 +18,7 @@ import type { Aria2Settings, Magnet, SubmitOutcome } from "../shared/types";
 import { MovieCard } from "./components/MovieCard";
 import { SettingsPane } from "./components/SettingsPane";
 import { SubmitReport } from "./components/SubmitReport";
+import { useCookie } from "./useCookie";
 import { useJavdbTabs } from "./useJavdbTabs";
 
 type View = "list" | "settings";
@@ -33,6 +34,7 @@ const count = (value: number, noun: string): string =>
 
 export const App = (): React.ReactElement => {
   const { sources, unreadable, loading, rescan } = useJavdbTabs();
+  const cookie = useCookie();
   const [settings, setSettings] = useState<Aria2Settings>(DEFAULT_SETTINGS);
   const [view, setView] = useState<View>("list");
   const [selection, setSelection] = useState<Selection>({});
@@ -210,6 +212,17 @@ export const App = (): React.ReactElement => {
               </Alert>
             ) : null}
 
+            {cookie.problem ? (
+              <Alert severity="error" variant="outlined">
+                {cookie.problem}
+              </Alert>
+            ) : null}
+            {cookie.notice ? (
+              <Alert severity="success" variant="outlined">
+                {cookie.notice}
+              </Alert>
+            ) : null}
+
             <SubmitReport outcomes={outcomes} />
           </Stack>
         )}
@@ -224,7 +237,35 @@ export const App = (): React.ReactElement => {
             spacing={1}
             sx={{ px: 1.5, py: 1, flexShrink: 0 }}
           >
-            <Typography variant="caption" color="text.secondary" sx={{ flexGrow: 1 }}>
+            <Tooltip title={`javdb cookie: ${cookie.summary}`}>
+              <Button size="small" color="inherit" onClick={() => void cookie.copy()}>
+                Copy cookie
+              </Button>
+            </Tooltip>
+            <Tooltip
+              title={
+                cookie.envName
+                  ? `Write JAVDB_COOKIE into ${cookie.envName}`
+                  : "Choose the .env file on the settings page first"
+              }
+            >
+              <span>
+                <Button
+                  size="small"
+                  color="inherit"
+                  onClick={() => void cookie.writeToEnv()}
+                  disabled={cookie.busy}
+                >
+                  Update .env
+                </Button>
+              </span>
+            </Tooltip>
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ flexGrow: 1, textAlign: "right" }}
+            >
               {notice ?? `${count(chosen.length, "magnet")} selected`}
             </Typography>
             <Button
